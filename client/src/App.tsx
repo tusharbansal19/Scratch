@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { store } from './store';
@@ -6,13 +7,31 @@ import BoardPage from './pages/BoardPage';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import { useAuthStore } from './store/authStore';
+import Loader from './components/Loader';
+import { useKeepAlive } from './hooks/useKeepAlive';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const { isAuthenticated, isLoading } = useAuthStore();
+
+  if (isLoading) return <Loader />;
+
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
 };
 
 function App() {
+  const checkAuth = useAuthStore((state) => state.checkAuth);
+  const isLoading = useAuthStore((state) => state.isLoading);
+
+  useKeepAlive();
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  if (isLoading) {
+    return <Loader />;
+  }
+
   return (
     <Provider store={store}>
       <BrowserRouter>

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import Cookies from 'js-cookie';
 
 interface User {
     email: string;
@@ -10,21 +10,45 @@ interface AuthState {
     token: string | null;
     user: User | null;
     isAuthenticated: boolean;
+    isLoading: boolean;
     setAuth: (token: string, user: User) => void;
     logout: () => void;
+    checkAuth: () => void;
 }
 
-export const useAuthStore = create<AuthState>()(
-    persist(
-        (set) => ({
-            token: null,
-            user: null,
-            isAuthenticated: false,
-            setAuth: (token, user) => set({ token, user, isAuthenticated: true }),
-            logout: () => set({ token: null, user: null, isAuthenticated: false }),
-        }),
-        {
-            name: 'auth-storage',
+export const useAuthStore = create<AuthState>((set) => ({
+    token: null,
+    user: null,
+    isAuthenticated: false,
+    isLoading: true,
+
+    setAuth: (token, user) => {
+        Cookies.set('auth_token', token, { expires: 7 }); // 7 days
+        localStorage.setItem('auth_user', JSON.stringify(user));
+        set({ token, user, isAuthenticated: true });
+    },
+
+    logout: () => {
+        Cookies.remove('auth_token');
+        localStorage.removeItem('auth_user');
+        set({ token: null, user: null, isAuthenticated: false });
+    },
+
+    checkAuth: () => {
+        const token = Cookies.get('auth_token');
+        const userStr = localStorage.getItem('auth_user');
+
+        if (token && userStr) {
+            try {
+                const user = JSON.parse(userStr);
+                set({ token, user, isAuthenticated: true, isLoading: false });
+            } catch (e) {
+                Cookies.remove('auth_token');
+                localStorage.removeItem('auth_user');
+                set({ token: null, user: null, isAuthenticated: false, isLoading: false });
+            }
+        } else {
+            set({ isLoading: false, isAuthenticated: false });
         }
-    )
-);
+    }
+}));

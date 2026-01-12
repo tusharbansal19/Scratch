@@ -4,15 +4,14 @@ import type { RootState } from '../store';
 import { setTool, setColor, setBackgroundColor, type ToolType, type BackgroundType } from '../store/boardSlice';
 import {
     Square, Circle, Minus, MousePointer2, Eraser,
-    Hand, Download, Undo2, Redo2, Settings2, Share2,
-    Trash2, Layers, Grid3X3, Moon, Sun, Monitor, Scissors
+    Hand,
+    Moon, Sun, Monitor, Scissors
 } from 'lucide-react';
 
 export default function Toolbar() {
     const dispatch = useDispatch();
     const { tool, color, backgroundColor } = useSelector((state: RootState) => state.board);
     const [showColorPicker, setShowColorPicker] = useState(false);
-    const strokeWidth = useSelector((state: RootState) => state.board.strokeWidth);
 
     // Helper dispatcher functions
     const handleSetTool = (t: ToolType) => dispatch(setTool(t));
