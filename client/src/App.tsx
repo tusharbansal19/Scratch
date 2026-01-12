@@ -41,11 +41,7 @@ function App() {
 
           <Route
             path="/"
-            element={
-              <ProtectedRoute>
-                <Home />
-              </ProtectedRoute>
-            }
+            element={<Home />}
           />
           <Route
             path="/board/:boardId"

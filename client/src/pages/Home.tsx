@@ -39,19 +39,39 @@ export default function Home() {
                         </div>
                         <span className="font-bold text-xl tracking-tight">Scratch</span>
                     </div>
+
                     <div className="flex items-center gap-4">
-                        <span className="text-sm font-medium text-gray-400 hidden sm:block">
-                            Welcome, <span className="text-white">{user?.full_name || 'User'}</span>
-                        </span>
-                        <button
-                            onClick={() => {
-                                logout();
-                                navigate('/login');
-                            }}
-                            className="text-sm font-medium bg-zinc-800 text-white px-4 py-2 rounded-lg hover:bg-zinc-700 transition-colors border border-zinc-700"
-                        >
-                            Log Out
-                        </button>
+                        {user ? (
+                            <>
+                                <span className="text-sm font-medium text-gray-400 hidden sm:block">
+                                    Welcome, <span className="text-white">{user.full_name || 'User'}</span>
+                                </span>
+                                <button
+                                    onClick={() => {
+                                        logout();
+                                        navigate('/login');
+                                    }}
+                                    className="text-sm font-medium bg-zinc-800 text-white px-4 py-2 rounded-lg hover:bg-zinc-700 transition-colors border border-zinc-700"
+                                >
+                                    Log Out
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <button
+                                    onClick={() => navigate('/login')}
+                                    className="text-sm font-medium text-gray-300 hover:text-white px-3 py-2 transition-colors"
+                                >
+                                    Log In
+                                </button>
+                                <button
+                                    onClick={() => navigate('/register')}
+                                    className="text-sm font-medium bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-600/20"
+                                >
+                                    Sign Up
+                                </button>
+                            </>
+                        )}
                     </div>
                 </div>
             </nav>

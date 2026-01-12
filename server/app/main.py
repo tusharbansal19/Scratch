@@ -16,15 +16,19 @@ async def lifespan(app: FastAPI):
     mongodb.connect()
     await redis_client.connect()
     
-    # Start Redis Listener in background
+    # Start Redis Listener and Cleanup in background
+    from app.services.cleanup import cleanup_empty_rooms
     task = asyncio.create_task(listen_to_redis())
+    cleanup_task = asyncio.create_task(cleanup_empty_rooms())
     
     yield
     
     # Shutdown
     task.cancel()
+    cleanup_task.cancel()
     try:
         await task
+        await cleanup_task
     except asyncio.CancelledError:
         pass
         
