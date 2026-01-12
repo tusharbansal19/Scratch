@@ -27,13 +27,13 @@ export default function Canvas({ boardId }: CanvasProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [fabricCanvas, setFabricCanvas] = useState<fabric.Canvas | null>(null);
     const { tool, color, strokeWidth, backgroundColor } = useSelector((state: RootState) => state.board);
-    
+
     // Auth & User Info
     const { user } = useAuthStore();
-    
+
     // Remote cursors state: { [userId]: { x, y, name, color, lastUpdate } }
     const [cursors, setCursors] = useState<Record<string, any>>({});
-    
+
     // Sync Cursors to Redux (for Header UI)
     useEffect(() => {
         dispatch(updateCursors(cursors));
@@ -42,10 +42,10 @@ export default function Canvas({ boardId }: CanvasProps) {
     const socketRef = useRef<WebSocket | null>(null);
     const isRemoteUpdate = useRef(false);
     const clientId = useRef(uuidv4()).current;
-    
+
     // Assign a random color/name to this client
     const myCursorColor = useRef(CURSOR_COLORS[Math.floor(Math.random() * CURSOR_COLORS.length)]).current;
-    
+
     // Dynamic Name Ref
     const myName = useRef('Guest ' + clientId.slice(0, 4));
     useEffect(() => {
@@ -120,13 +120,13 @@ export default function Canvas({ boardId }: CanvasProps) {
         fabricCanvas.off('mouse:down');
         fabricCanvas.off('mouse:move');
         fabricCanvas.off('mouse:up');
-        
+
         if (tool === 'draw') {
             fabricCanvas.isDrawingMode = true;
             const brush = new fabric.PencilBrush(fabricCanvas);
             brush.color = brushColor;
             brush.width = strokeWidth;
-            brush.decimate = 2.5; 
+            brush.decimate = 2.5;
             fabricCanvas.freeDrawingBrush = brush;
             fabricCanvas.defaultCursor = 'crosshair';
         } else if (tool === 'eraser') {
@@ -139,7 +139,7 @@ export default function Canvas({ boardId }: CanvasProps) {
         } else if (tool === 'eraser-area') {
             fabricCanvas.isDrawingMode = true;
             const brush = new fabric.PencilBrush(fabricCanvas);
-            brush.color = 'rgba(255, 0, 0, 0.3)'; 
+            brush.color = 'rgba(255, 0, 0, 0.3)';
             brush.width = 1;
             fabricCanvas.freeDrawingBrush = brush;
             fabricCanvas.defaultCursor = 'cell';
@@ -147,93 +147,93 @@ export default function Canvas({ boardId }: CanvasProps) {
             fabricCanvas.selection = true;
             fabricCanvas.forEachObject((o: any) => { o.selectable = true; o.evented = true; });
         } else if (tool === 'pan') {
-             fabricCanvas.defaultCursor = 'grab';
-             let isDragging = false;
-             let lastPosX = 0; let lastPosY = 0;
-             const onMouseDown = (opt: any) => {
-                 const evt = opt.e;
-                 isDragging = true;
-                 fabricCanvas.defaultCursor = 'grabbing';
-                 lastPosX = evt.clientX; lastPosY = evt.clientY;
-             };
-             const onMouseMove = (opt: any) => {
-                 if(isDragging) {
-                     const e = opt.e;
-                     const vpt = fabricCanvas.viewportTransform!;
-                     vpt[4] += e.clientX - lastPosX;
-                     vpt[5] += e.clientY - lastPosY;
-                     fabricCanvas.requestRenderAll();
-                     lastPosX = e.clientX; lastPosY = e.clientY;
-                 }
-             };
-             const onMouseUp = () => { 
+            fabricCanvas.defaultCursor = 'grab';
+            let isDragging = false;
+            let lastPosX = 0; let lastPosY = 0;
+            const onMouseDown = (opt: any) => {
+                const evt = opt.e;
+                isDragging = true;
+                fabricCanvas.defaultCursor = 'grabbing';
+                lastPosX = evt.clientX; lastPosY = evt.clientY;
+            };
+            const onMouseMove = (opt: any) => {
+                if (isDragging) {
+                    const e = opt.e;
+                    const vpt = fabricCanvas.viewportTransform!;
+                    vpt[4] += e.clientX - lastPosX;
+                    vpt[5] += e.clientY - lastPosY;
+                    fabricCanvas.requestRenderAll();
+                    lastPosX = e.clientX; lastPosY = e.clientY;
+                }
+            };
+            const onMouseUp = () => {
                 if (fabricCanvas.viewportTransform) {
                     fabricCanvas.setViewportTransform(fabricCanvas.viewportTransform);
                 }
-                isDragging = false; 
+                isDragging = false;
                 fabricCanvas.defaultCursor = 'grab';
-             };
-             fabricCanvas.on('mouse:down', onMouseDown);
-             fabricCanvas.on('mouse:move', onMouseMove);
-             fabricCanvas.on('mouse:up', onMouseUp);
+            };
+            fabricCanvas.on('mouse:down', onMouseDown);
+            fabricCanvas.on('mouse:move', onMouseMove);
+            fabricCanvas.on('mouse:up', onMouseUp);
         }
-        
+
         // Shapes
         if (tool === 'rect' || tool === 'circle') {
-             fabricCanvas.defaultCursor = 'crosshair';
-             let isDown = false;
-             let tempObj: any;
-             let startX: number; let startY: number;
+            fabricCanvas.defaultCursor = 'crosshair';
+            let isDown = false;
+            let tempObj: any;
+            let startX: number; let startY: number;
 
-             const onShapeMouseDown = (o: any) => {
-                 isDown = true;
-                 const pointer = fabricCanvas.getPointer(o.e);
-                 startX = pointer.x; startY = pointer.y;
-                 const id = uuidv4();
-                 const shapeStroke = color || '#3b82f6';
-                 if(tool === 'rect') {
-                     tempObj = new fabric.Rect({
-                         left: startX, top: startY, width: 0, height: 0, 
-                         fill: 'transparent', stroke: shapeStroke, strokeWidth: strokeWidth,
-                         selectable: false, id: id // @ts-ignore
-                     });
-                 } else {
-                     tempObj = new fabric.Circle({
-                         left: startX, top: startY, radius: 0, 
-                         fill: 'transparent', stroke: shapeStroke, strokeWidth: strokeWidth,
-                         selectable: false, id: id // @ts-ignore
-                     });
-                 }
-                 if(tempObj) fabricCanvas.add(tempObj);
-             };
-             
-             const onShapeMouseMove = (o: any) => {
-                 if(!isDown || !tempObj) return;
-                 const pointer = fabricCanvas.getPointer(o.e);
-                 if(tool === 'rect') {
-                     if(startX > pointer.x) tempObj.set({ left: Math.abs(pointer.x) });
-                     if(startY > pointer.y) tempObj.set({ top: Math.abs(pointer.y) });
-                     tempObj.set({ width: Math.abs(startX - pointer.x) });
-                     tempObj.set({ height: Math.abs(startY - pointer.y) });
-                 } else {
-                     const radius = Math.abs(startX - pointer.x)/2;
-                     tempObj.set({ radius: radius });
-                     if(startX > pointer.x) tempObj.set({ left: Math.abs(pointer.x) });
-                     if(startY > pointer.y) tempObj.set({ top: Math.abs(pointer.y) });
-                 }
-                 fabricCanvas.requestRenderAll();
-             };
+            const onShapeMouseDown = (o: any) => {
+                isDown = true;
+                const pointer = fabricCanvas.getPointer(o.e);
+                startX = pointer.x; startY = pointer.y;
+                const id = uuidv4();
+                const shapeStroke = color || '#3b82f6';
+                if (tool === 'rect') {
+                    tempObj = new fabric.Rect({
+                        left: startX, top: startY, width: 0, height: 0,
+                        fill: 'transparent', stroke: shapeStroke, strokeWidth: strokeWidth,
+                        selectable: false, id: id // @ts-ignore
+                    });
+                } else {
+                    tempObj = new fabric.Circle({
+                        left: startX, top: startY, radius: 0,
+                        fill: 'transparent', stroke: shapeStroke, strokeWidth: strokeWidth,
+                        selectable: false, id: id // @ts-ignore
+                    });
+                }
+                if (tempObj) fabricCanvas.add(tempObj);
+            };
 
-             const onShapeMouseUp = () => {
-                 if(!isDown) return;
-                 isDown = false;
-                 if(tempObj) { tempObj.setCoords(); fabricCanvas.fire('object:modified', { target: tempObj }); }
-                 tempObj = null;
-             };
+            const onShapeMouseMove = (o: any) => {
+                if (!isDown || !tempObj) return;
+                const pointer = fabricCanvas.getPointer(o.e);
+                if (tool === 'rect') {
+                    if (startX > pointer.x) tempObj.set({ left: Math.abs(pointer.x) });
+                    if (startY > pointer.y) tempObj.set({ top: Math.abs(pointer.y) });
+                    tempObj.set({ width: Math.abs(startX - pointer.x) });
+                    tempObj.set({ height: Math.abs(startY - pointer.y) });
+                } else {
+                    const radius = Math.abs(startX - pointer.x) / 2;
+                    tempObj.set({ radius: radius });
+                    if (startX > pointer.x) tempObj.set({ left: Math.abs(pointer.x) });
+                    if (startY > pointer.y) tempObj.set({ top: Math.abs(pointer.y) });
+                }
+                fabricCanvas.requestRenderAll();
+            };
 
-             fabricCanvas.on('mouse:down', onShapeMouseDown);
-             fabricCanvas.on('mouse:move', onShapeMouseMove);
-             fabricCanvas.on('mouse:up', onShapeMouseUp);
+            const onShapeMouseUp = () => {
+                if (!isDown) return;
+                isDown = false;
+                if (tempObj) { tempObj.setCoords(); fabricCanvas.fire('object:modified', { target: tempObj }); }
+                tempObj = null;
+            };
+
+            fabricCanvas.on('mouse:down', onShapeMouseDown);
+            fabricCanvas.on('mouse:move', onShapeMouseMove);
+            fabricCanvas.on('mouse:up', onShapeMouseUp);
         }
 
     }, [tool, color, strokeWidth, backgroundColor, fabricCanvas]);
@@ -242,7 +242,7 @@ export default function Canvas({ boardId }: CanvasProps) {
     useEffect(() => {
         if (!fabricCanvas) return;
 
-        const ws = new WebSocket(`ws://localhost:8000/api/ws/${boardId}`);
+        const ws = new WebSocket(`wss://scratch-161f.onrender.com/api/ws/${boardId}`);
         socketRef.current = ws;
 
         const sendCursorMove = throttle((data: any) => {
@@ -253,7 +253,7 @@ export default function Canvas({ boardId }: CanvasProps) {
                     userId: clientId
                 }));
             }
-        }, 32); 
+        }, 32);
 
         const handleMouseMove = (opt: any) => {
             const pointer = fabricCanvas.getPointer(opt.e);
@@ -269,18 +269,18 @@ export default function Canvas({ boardId }: CanvasProps) {
         ws.onmessage = (event) => {
             try {
                 const msg = JSON.parse(event.data);
-                
+
                 if (msg.type === 'history') {
                     handleHistory(msg.data);
                     return;
                 }
-                
+
                 if (msg.type === 'cursor' && msg.userId !== clientId) {
                     setCursors(prev => ({
                         ...prev,
                         [msg.userId]: { ...msg.data, lastUpdate: Date.now() }
                     }));
-                    return; 
+                    return;
                 }
 
                 if (msg.userId && msg.userId !== clientId) {
@@ -340,29 +340,29 @@ export default function Canvas({ boardId }: CanvasProps) {
 
         const handlePathCreated = (e: any) => {
             const path = e.path;
-            
+
             if (tool === 'eraser-area') {
                 const objects = fabricCanvas.getObjects();
-                path.setCoords(); 
-                
+                path.setCoords();
+
                 objects.forEach(obj => {
                     if (obj === path) return;
-                    obj.setCoords(); 
-                    
+                    obj.setCoords();
+
                     if (
-                        path.intersectsWithObject(obj) || 
+                        path.intersectsWithObject(obj) ||
                         obj.intersectsWithObject(path) ||
-                        path.isContainedWithinObject(obj) || 
+                        path.isContainedWithinObject(obj) ||
                         obj.isContainedWithinObject(path)
                     ) {
                         fabricCanvas.remove(obj);
                         sendEvent('object:removed', { id: obj.id });
                     }
                 });
-                
-                fabricCanvas.remove(path); 
+
+                fabricCanvas.remove(path);
                 fabricCanvas.requestRenderAll();
-                return; 
+                return;
             }
 
             if (isRemoteUpdate.current) return;
@@ -372,7 +372,7 @@ export default function Canvas({ boardId }: CanvasProps) {
 
         const handleObjectAdded = (e: any) => {
             if (isRemoteUpdate.current) return;
-            if (e.target.type === 'path') return; 
+            if (e.target.type === 'path') return;
             const obj = e.target;
             if (!obj.id) obj.id = uuidv4();
             sendEvent('object:added', obj.toObject());
@@ -388,15 +388,15 @@ export default function Canvas({ boardId }: CanvasProps) {
         fabricCanvas.on('object:modified', handleObjectModified);
 
         return () => {
-             // clean up socket
-             if (socketRef.current) socketRef.current.close();
-             sendCursorMove.cancel();
-             fabricCanvas.off('path:created', handlePathCreated);
-             fabricCanvas.off('object:added', handleObjectAdded);
-             fabricCanvas.off('object:modified', handleObjectModified);
-             fabricCanvas.off('mouse:move', handleMouseMove);
+            // clean up socket
+            if (socketRef.current) socketRef.current.close();
+            sendCursorMove.cancel();
+            fabricCanvas.off('path:created', handlePathCreated);
+            fabricCanvas.off('object:added', handleObjectAdded);
+            fabricCanvas.off('object:modified', handleObjectModified);
+            fabricCanvas.off('mouse:move', handleMouseMove);
         };
-    }, [fabricCanvas, boardId, tool]); 
+    }, [fabricCanvas, boardId, tool]);
 
     // Cleanup old cursors
     useEffect(() => {
@@ -422,22 +422,22 @@ export default function Canvas({ boardId }: CanvasProps) {
             {/* Grid Dots */}
             <div className="absolute inset-0 pointer-events-none opacity-20"
                 style={{
-                    backgroundImage: backgroundColor === '#1e1e1e' 
-                        ? 'radial-gradient(#4b5563 1px, transparent 1px)' 
+                    backgroundImage: backgroundColor === '#1e1e1e'
+                        ? 'radial-gradient(#4b5563 1px, transparent 1px)'
                         : 'radial-gradient(#9ca3af 1px, transparent 1px)',
                     backgroundSize: '24px 24px'
                 }}
             ></div>
-            
+
             <canvas ref={canvasRef} className="block" />
-            
+
             {/* Live Cursors Overlay - Arrows Only */}
             {Object.entries(cursors).map(([id, cursor]) => (
-                <div key={id} 
+                <div key={id}
                     className="absolute pointer-events-none flex flex-col items-start z-50 transition-all duration-75 ease-linear"
-                    style={{ 
-                        left: cursor.x, 
-                        top: cursor.y 
+                    style={{
+                        left: cursor.x,
+                        top: cursor.y
                     }}
                 >
                     <svg width="24" height="24" viewBox="0 0 24 24" fill={cursor.color} stroke="white" strokeWidth="2">

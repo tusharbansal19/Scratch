@@ -10,7 +10,7 @@ export default function Home() {
         setLoading(true);
         try {
             // In a real app we'd call the API, but for demo speed we can just generate a UUID locally or use the API
-            const res = await fetch('http://localhost:8000/api/boards', {
+            const res = await fetch('https://scratch-161f.onrender.com/api/boards', {
                 method: 'POST',
             });
             if (!res.ok) throw new Error("Failed to create");

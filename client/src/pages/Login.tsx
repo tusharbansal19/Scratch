@@ -22,7 +22,7 @@ export default function Login() {
             formData.append('username', email); // OAuth2 expects 'username'
             formData.append('password', password);
 
-            const res = await fetch('http://localhost:8000/api/auth/token', {
+            const res = await fetch('https://scratch-161f.onrender.com/api/auth/token', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: formData,
@@ -34,7 +34,7 @@ export default function Login() {
             const token = data.access_token;
 
             // 2. Get User Details
-            const userRes = await fetch('http://localhost:8000/api/auth/me', {
+            const userRes = await fetch('https://scratch-161f.onrender.com/api/auth/me', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 

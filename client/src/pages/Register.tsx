@@ -16,7 +16,7 @@ export default function Register() {
         setError('');
 
         try {
-            const res = await fetch('http://localhost:8000/api/auth/register', {
+            const res = await fetch('https://scratch-161f.onrender.com/api/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password, full_name: fullName }),
