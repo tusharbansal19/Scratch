@@ -9,6 +9,7 @@ interface BoardState {
     strokeWidth: number;
     backgroundColor: BackgroundType;
     cursors: Record<string, any>;
+    clearTrigger: number;
 }
 
 const initialState: BoardState = {
@@ -17,6 +18,7 @@ const initialState: BoardState = {
     strokeWidth: 2,
     backgroundColor: '#1e1e1e',
     cursors: {},
+    clearTrigger: 0,
 };
 
 const boardSlice = createSlice({
@@ -38,8 +40,11 @@ const boardSlice = createSlice({
         updateCursors(state, action: PayloadAction<Record<string, any>>) {
             state.cursors = action.payload;
         },
+        triggerClearBoard(state) {
+            state.clearTrigger += 1;
+        }
     },
 });
 
-export const { setTool, setColor, setStrokeWidth, setBackgroundColor, updateCursors } = boardSlice.actions;
+export const { setTool, setColor, setStrokeWidth, setBackgroundColor, updateCursors, triggerClearBoard } = boardSlice.actions;
 export default boardSlice.reducer;

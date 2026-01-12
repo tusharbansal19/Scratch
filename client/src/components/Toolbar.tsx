@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../store';
-import { setTool, setColor, setBackgroundColor, type ToolType, type BackgroundType } from '../store/boardSlice';
+import { setTool, setColor, setBackgroundColor, triggerClearBoard, type ToolType, type BackgroundType } from '../store/boardSlice';
 import {
     Square, Circle, Minus, MousePointer2, Eraser,
     Hand,
-    Moon, Sun, Monitor, Scissors, Palette, X
+    Moon, Sun, Monitor, Scissors, Palette, X, Trash2
 } from 'lucide-react';
 
 export default function Toolbar() {
@@ -18,6 +18,13 @@ export default function Toolbar() {
     const handleSetTool = (t: ToolType) => dispatch(setTool(t));
     const handleSetColor = (c: string) => dispatch(setColor(c));
     const handleSetBackgroundColor = (c: BackgroundType) => dispatch(setBackgroundColor(c));
+
+    const handleClearBoard = () => {
+        if (window.confirm("Are you sure you want to clear the entire board? This cannot be undone.")) {
+            dispatch(triggerClearBoard());
+            setIsMobileMenuOpen(false);
+        }
+    };
 
     const tools: { id: ToolType; icon: any; label: string; shortcut: string }[] = [
         { id: 'select', icon: MousePointer2, label: 'Select', shortcut: 'V' },
@@ -61,14 +68,14 @@ export default function Toolbar() {
                                 handleSetTool(t.id);
                                 setIsMobileMenuOpen(false); // Close on selection for mobile convenience
                             }}
-                            className={`p-2 md:p-3 rounded-lg md:rounded-xl transition-all duration-200 group relative
+                            className={`p-3 rounded-xl transition-all duration-200 group relative
                               ${tool === t.id
                                     ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
                                     : 'text-gray-400 hover:bg-gray-700/50 hover:text-white'
                                 }`}
                             title={`${t.label} (${t.shortcut})`}
                         >
-                            <t.icon className="w-5 h-5 md:w-5 md:h-5" />
+                            <t.icon size={20} />
 
                             {/* Tooltip (Desktop Only) */}
                             <div className="hidden md:block absolute left-full ml-4 top-1/2 -translate-y-1/2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none transition-opacity border border-gray-800">
@@ -76,6 +83,21 @@ export default function Toolbar() {
                             </div>
                         </button>
                     ))}
+
+                    <div className="h-px bg-gray-700/50 my-1" />
+
+                    {/* Clear Board Button */}
+                    <button
+                        onClick={handleClearBoard}
+                        className="p-3 rounded-xl text-red-400 hover:bg-red-500/10 hover:text-red-500 transition-all duration-200 group relative"
+                        title="Clear Board"
+                    >
+                        <Trash2 size={20} />
+                        {/* Tooltip */}
+                        <div className="hidden md:block absolute left-full ml-4 top-1/2 -translate-y-1/2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none transition-opacity border border-gray-800">
+                            Clear Board
+                        </div>
+                    </button>
 
                     <div className="h-px bg-gray-700/50 my-1" />
 

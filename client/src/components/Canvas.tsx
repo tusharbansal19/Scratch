@@ -26,10 +26,27 @@ export default function Canvas({ boardId }: CanvasProps) {
     const dispatch = useDispatch();
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [fabricCanvas, setFabricCanvas] = useState<fabric.Canvas | null>(null);
-    const { tool, color, strokeWidth, backgroundColor } = useSelector((state: RootState) => state.board);
+    const { tool, color, strokeWidth, backgroundColor, clearTrigger } = useSelector((state: RootState) => state.board);
+    const prevClearTriggerRef = useRef(clearTrigger);
 
     // Auth & User Info
     const { user } = useAuthStore();
+
+    // Clear Board Listener
+    useEffect(() => {
+        if (prevClearTriggerRef.current !== clearTrigger && fabricCanvas) {
+            if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+                socketRef.current.send(JSON.stringify({
+                    type: 'board:clear',
+                    data: null,
+                    userId: clientId
+                }));
+            }
+            fabricCanvas.clear();
+            fabricCanvas.setBackgroundColor(backgroundColor || '#1e1e1e', () => fabricCanvas.requestRenderAll());
+        }
+        prevClearTriggerRef.current = clearTrigger;
+    }, [clearTrigger, fabricCanvas, backgroundColor]);
 
     // Remote cursors state: { [userId]: { x, y, name, color, lastUpdate } }
     const [cursors, setCursors] = useState<Record<string, any>>({});
@@ -280,6 +297,12 @@ export default function Canvas({ boardId }: CanvasProps) {
                         ...prev,
                         [msg.userId]: { ...msg.data, lastUpdate: Date.now() }
                     }));
+                    return;
+                }
+
+                if (msg.type === 'board:clear') {
+                    fabricCanvas.clear();
+                    fabricCanvas.setBackgroundColor(backgroundColor || '#1e1e1e', () => fabricCanvas.requestRenderAll());
                     return;
                 }
 

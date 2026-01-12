@@ -1,0 +1,37 @@
+# General
+.DS_Store
+Thumbs.db
+*.log
+
+# Editor/IDE
+.vscode/
+.idea/
+*.swp
+
+# Node.js / Client
+client/node_modules/
+client/dist/
+client/build/
+client/.env
+client/.env.local
+client/coverage/
+client/.npm/
+
+# Python / Server
+server/__pycache__/
+server/*.pyc
+server/venv/
+server/env/
+server/.env
+server/.pytest_cache/
+server/htmlcov/
+server/.coverage
+server/site-packages/
+
+# Root Level (in case dependencies are installed here)
+node_modules/
+.env
+venv/
+env/
+__pycache__/
+*.pyc

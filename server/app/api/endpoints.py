@@ -98,6 +98,12 @@ async def websocket_endpoint(websocket: WebSocket, board_id: str):
                             {"$pull": {"snapshot": {"id": obj_id}}}
                         )
                 
+                elif msg_type == "board:clear":
+                    await mongodb.db.boards.update_one(
+                        {"board_id": board_id},
+                        {"$set": {"snapshot": []}}
+                    )
+                
                 # Handle batch events (if we implement batching on frontend)
                 elif msg_type == "batch":
                     events = msg.get("data", [])
