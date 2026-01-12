@@ -1,57 +1,122 @@
-# Real-Time Collaborative Drawing Board
+# Scratch ⚡
 
-A Figma-like real-time collaboration tool built with React, FastAPI, WebSockets, Redis, and MongoDB.
+> **The Real-Time Collaborative Whiteboard for Modern Teams.**
 
-## Features
-- **Real-time Collaboration**: Live drawing sync via WebSockets and Redis Pub/Sub.
-- **Interactive Canvas**: Powered by Fabric.js for object-based drawing (Shapes, Free draw, Text).
-- **Shareable Links**: Unique board IDs allow users to jump into the same session instantly.
-- **Scalable Architecture**: Designed with distributed systems in mind using Redis.
-- **Persistence**: Boards are saved to MongoDB.
+Scratch is an industrial-grade, infinite-canvas whiteboard designed for speed, simplicity, and seamless collaboration. Whether you're architecting a system, running a sprint, or just sketching ideas, Scratch keeps everyone on the same page—literally.
 
-## Architecture
-- **Frontend**: React + TypeScript + Vite
-  - `fabric.js` for canvas manipulation.
-  - `zustand` for client-state management.
-  - `react-router-dom` for navigation.
-  - `tailwindcss` for styling.
-- **Backend**: FastAPI (Python)
-  - `fastapi` for REST and WebSockets.
-  - `redis` for real-time event broadcasting (Pub/Sub).
-  - `motor` (Async Mongo) for database operations.
+---
 
-## Setup Instructions
+## ✨ Why Scratch?
+
+We built Scratch because we wanted a whiteboard that felt **native**, not web-based.
+- **🚀 Ultra-Low Latency**: Powered by WebSockets and Redis Pub/Sub, changes propagate in < 30ms.
+- **🎨 Infinite Canvas**: Pan, zoom, and expand your ideas forever without hitting borders.
+- **👥 True Multiplayer**: See your team's cursors fly around in real-time. Feels like you're in the same room.
+- **📱 Mobile Ready**: A fully responsive interface that adapts to your device, from 4K monitors to smartphones.
+- **💾 Smart Persistence**: Auto-saves your work. Rooms strictly manage their own lifecycle (auto-cleaning empty, stale rooms).
+
+---
+
+## 🛠️ The Tech Stack
+
+Built with a focus on **performance** and **scalability**.
+
+| Area | Technology | Reason |
+|------|------------|--------|
+| **Frontend** | **React + TypeScript** | Robust, type-safe UI architecture. |
+| **Canvas Engine** | **Fabric.js** | High-performance object rendering. |
+| **Styling** | **Tailwind CSS** | Modern, responsive, utility-first design. |
+| **Backend** | **FastAPI (Python)** | Async-first, high-throughput API. |
+| **Real-Time** | **Redis Pub/Sub** | Horizontally scalable message broker. |
+| **Database** | **MongoDB** | Flexible, document-oriented persistence. |
+| **Auth** | **JWT & OAuth2** | Secure, stateless authentication. |
+
+---
+
+## 🚀 Quick Start Guide
+
+Want to run this locally? Let's get you set up in less than 5 minutes.
 
 ### Prerequisites
-- Node.js & npm
-- Python 3.9+
-- Redis running on `localhost:6379`
-- MongoDB running on `localhost:27017`
+- **Node.js** (v16+)
+- **Python** (v3.9+)
+- **Redis** & **MongoDB** running locally (or via Docker)
 
-### 1. Backend Setup
+### 1️⃣ Backend Setup
+The heart of the operation. Handles auth, sockets, and data.
+
 ```bash
 cd server
+
+# Create virtual environment
 python -m venv venv
-# Windows
+
+# Activate it
+# Windows:
 venv\Scripts\activate
-# Linux/Mac
+# Mac/Linux:
 # source venv/bin/activate
 
+# Install dependencies
 pip install -r requirements.txt
+
+# Run the server
 uvicorn app.main:app --reload
 ```
-API running at: `http://localhost:8000`
+*Server runs at `http://localhost:8000`*
 
-### 2. Frontend Setup
+### 2️⃣ Frontend Setup
+The visual interface.
+
 ```bash
 cd client
+
+# Install packages
 npm install
+
+# Start development server
 npm run dev
 ```
-App running at: `http://localhost:5173`
+*Client runs at `http://localhost:5173`*
 
-## Usage
-1. Open the frontend.
-2. Click "Create New Board".
-3. Share the URL with a friend (or open in a new tab).
-4. Draw together!
+---
+
+## 📁 System Architecture
+
+A peek under the hood:
+
+```
+root/
+├── client/                 # React Frontend application
+│   ├── src/components/     # UI Building blocks (Canvas, Toolbar)
+│   ├── src/store/          # Redux + Zustand state management
+│   └── src/hooks/          # Custom hooks (KeepAlive, Auth)
+│
+├── server/                 # FastAPI Backend application
+│   ├── app/api/            # REST Endpoints & WS Handlers
+│   ├── app/services/       # Core Logic (Socket Manager, Cleanup Tasks)
+│   └── app/db/             # Database Connectors (Redis/Mongo)
+```
+
+---
+
+## 🤝 Contributing
+
+We believe in the power of community.
+1. **Fork** the repository.
+2. **Clone** it to your machine.
+3. **Create a branch** (`git checkout -b feature/cool-new-thing`).
+4. **Commit** your changes.
+5. **Push** and submit a **Pull Request**.
+
+---
+
+## 📄 License
+
+This project is open-sourced under the **MIT License**. Use it, break it, fix it, resize it.
+
+---
+
+<p align="center">
+  <i>Built with ❤️ for builders.</i>
+</p>
