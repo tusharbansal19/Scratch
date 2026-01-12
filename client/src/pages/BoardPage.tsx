@@ -31,12 +31,12 @@ export default function BoardPage() {
     return (
         <div className="w-screen h-screen overflow-hidden flex flex-col transition-colors duration-500" style={{ backgroundColor }}>
             {/* Floating Header */}
-            <header className="absolute top-0 left-0 right-0 h-16 px-4 flex items-center justify-between z-40 pointer-events-none">
+            <header className="absolute top-0 left-0 right-0 h-auto sm:h-16 px-2 sm:px-4 flex flex-col sm:flex-row items-start sm:items-center justify-between z-30 pointer-events-none gap-2 sm:gap-0 pt-2 sm:pt-0">
 
                 {/* Left: Brand & Board Info */}
                 <div className={`
-             flex items-center gap-4 p-2 pl-4 pr-6 rounded-2xl shadow-sm border pointer-events-auto mt-4 ml-4
-             backdrop-blur-md transition-colors duration-300
+             flex items-center gap-2 sm:gap-4 p-2 pl-3 sm:pl-4 pr-4 sm:pr-6 rounded-2xl shadow-sm border pointer-events-auto mt-2 sm:mt-4 ml-2 sm:ml-4
+             backdrop-blur-md transition-colors duration-300 transform scale-90 sm:scale-100 origin-top-left
              ${isDark ? 'bg-[#2a2a2a]/90 border-zinc-700' : 'bg-white/90 border-slate-200/50'}
         `}>
                     <Link to="/" className="flex items-center gap-2 group">
@@ -45,7 +45,7 @@ export default function BoardPage() {
                         </div>
                         <span className={`font-bold ${isDark ? 'text-gray-100' : 'text-slate-800'}`}>Scratch</span>
                     </Link>
-                    <div className={`w-px h-5 ${isDark ? 'bg-zinc-700' : 'bg-slate-200'}`}></div>
+                    <div className={`w-px h-5 ${isDark ? 'bg-zinc-700' : 'bg-slate-200'} hidden sm:block`}></div>
                     <div className="flex flex-col">
                         <span className={`text-xs font-bold leading-none ${isDark ? 'text-gray-200' : 'text-slate-900'}`}>Untitled Board</span>
                         <span className={`text-[10px] font-medium ${isDark ? 'text-zinc-500' : 'text-slate-500'}`}>Auto-saving...</span>
@@ -54,12 +54,12 @@ export default function BoardPage() {
 
                 {/* Right: Actions */}
                 <div className={`
-             flex items-center gap-3 p-2 rounded-2xl shadow-sm border pointer-events-auto mt-4 mr-4
-             backdrop-blur-md transition-colors duration-300
+             flex items-center gap-2 sm:gap-3 p-2 rounded-2xl shadow-sm border pointer-events-auto mt-2 sm:mt-4 mr-2 sm:mr-4 ml-auto sm:ml-0
+             backdrop-blur-md transition-colors duration-300 transform scale-90 sm:scale-100 origin-top-right
              ${isDark ? 'bg-[#2a2a2a]/90 border-zinc-700' : 'bg-white/90 border-slate-200/50'}
         `}>
                     {/* Avatars (Functional) */}
-                    <div className="relative mr-4">
+                    <div className="relative mr-2 sm:mr-4">
                         <div
                             onClick={() => setShowUsers(!showUsers)}
                             className="flex items-center -space-x-2 cursor-pointer hover:opacity-90 transition-opacity"
@@ -120,15 +120,15 @@ export default function BoardPage() {
 
                     <button
                         onClick={copyLink}
-                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-lg shadow-indigo-600/20 transition-all flex items-center gap-2 active:scale-95"
+                        className="px-3 sm:px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-lg shadow-indigo-600/20 transition-all flex items-center gap-2 active:scale-95"
                     >
                         {copied ? <Check size={16} /> : <Share2 size={16} />}
-                        {copied ? 'Copied' : 'Share'}
+                        <span className="hidden sm:inline">{copied ? 'Copied' : 'Share'}</span>
                     </button>
 
                     <div className={`w-px h-5 ${isDark ? 'bg-zinc-700' : 'bg-slate-200'}`}></div>
 
-                    <button className={`p-2 rounded-lg transition-colors ${isDark ? 'text-gray-400 hover:bg-zinc-800' : 'text-slate-600 hover:bg-slate-100'}`}>
+                    <button className={`p-2 rounded-lg transition-colors hidden sm:block ${isDark ? 'text-gray-400 hover:bg-zinc-800' : 'text-slate-600 hover:bg-slate-100'}`}>
                         <Download size={20} />
                     </button>
                     <button className={`p-2 rounded-lg transition-colors ${isDark ? 'text-gray-400 hover:bg-zinc-800' : 'text-slate-600 hover:bg-slate-100'}`}>

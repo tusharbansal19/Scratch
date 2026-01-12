@@ -5,13 +5,14 @@ import { setTool, setColor, setBackgroundColor, type ToolType, type BackgroundTy
 import {
     Square, Circle, Minus, MousePointer2, Eraser,
     Hand,
-    Moon, Sun, Monitor, Scissors
+    Moon, Sun, Monitor, Scissors, Palette, X
 } from 'lucide-react';
 
 export default function Toolbar() {
     const dispatch = useDispatch();
     const { tool, color, backgroundColor } = useSelector((state: RootState) => state.board);
     const [showColorPicker, setShowColorPicker] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     // Helper dispatcher functions
     const handleSetTool = (t: ToolType) => dispatch(setTool(t));
@@ -35,74 +36,97 @@ export default function Toolbar() {
     ];
 
     return (
-        <div className="absolute top-1/2 left-4 -translate-y-1/2 flex flex-col gap-4 z-10">
-            {/* Main Toolbar */}
-            <div className="bg-[#1e1e1e]/90 backdrop-blur-md p-3 rounded-2xl border border-gray-700 shadow-2xl flex flex-col gap-3">
-                {tools.map((t) => (
-                    <button
-                        key={t.id}
-                        onClick={() => handleSetTool(t.id)}
-                        className={`p-3 rounded-xl transition-all duration-200 group relative
-                          ${tool === t.id
-                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
-                                : 'text-gray-400 hover:bg-gray-700/50 hover:text-white'
-                            }`}
-                        title={`${t.label} (${t.shortcut})`}
-                    >
-                        <t.icon size={20} />
+        <>
+            {/* Mobile Trigger */}
+            <button
+                className="md:hidden fixed bottom-6 left-4 z-50 bg-indigo-600 text-white p-4 rounded-full shadow-2xl shadow-indigo-600/40 active:scale-90 transition-all hover:bg-indigo-700 hover:scale-105"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+                {isMobileMenuOpen ? <X size={24} /> : <Palette size={24} />}
+            </button>
 
-                        {/* Tooltip */}
-                        <div className="absolute left-full ml-4 top-1/2 -translate-y-1/2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none transition-opacity">
-                            {t.label} <span className="text-gray-500 ml-1">({t.shortcut})</span>
-                        </div>
-                    </button>
-                ))}
+            {/* Main Toolbar Container */}
+            <div className={`
+                fixed z-40 flex flex-col gap-4 transition-all duration-300 ease-in-out origin-bottom-left
+                md:absolute md:top-1/2 md:left-4 md:-translate-y-1/2 md:bottom-auto md:origin-center
+                bottom-24 left-4
+                ${isMobileMenuOpen ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-8 scale-90 pointer-events-none md:opacity-100 md:translate-y-0 md:scale-100 md:pointer-events-auto'}
+            `}>
+                {/* Main Toolbar */}
+                <div className="bg-[#1e1e1e]/90 backdrop-blur-md p-3 rounded-2xl border border-gray-700 shadow-2xl flex flex-col gap-3">
+                    {tools.map((t) => (
+                        <button
+                            key={t.id}
+                            onClick={() => {
+                                handleSetTool(t.id);
+                                setIsMobileMenuOpen(false); // Close on selection for mobile convenience
+                            }}
+                            className={`p-3 rounded-xl transition-all duration-200 group relative
+                              ${tool === t.id
+                                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
+                                    : 'text-gray-400 hover:bg-gray-700/50 hover:text-white'
+                                }`}
+                            title={`${t.label} (${t.shortcut})`}
+                        >
+                            <t.icon size={20} />
 
-                <div className="h-px bg-gray-700/50 my-1" />
+                            {/* Tooltip (Desktop Only) */}
+                            <div className="hidden md:block absolute left-full ml-4 top-1/2 -translate-y-1/2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none transition-opacity border border-gray-800">
+                                {t.label} <span className="text-gray-500 ml-1">({t.shortcut})</span>
+                            </div>
+                        </button>
+                    ))}
 
-                {/* Color Picker Trigger */}
-                <div className="relative">
-                    <button
-                        onClick={() => setShowColorPicker(!showColorPicker)}
-                        className="w-10 h-10 rounded-xl border-2 border-gray-600 flex items-center justify-center transition-transform hover:scale-105"
-                        style={{ backgroundColor: color }}
-                    >
-                        <div className="w-full h-full rounded-lg ring-1 ring-inset ring-black/20" />
-                    </button>
+                    <div className="h-px bg-gray-700/50 my-1" />
 
-                    {/* Popover Color Picker */}
-                    {showColorPicker && (
-                        <div className="absolute left-full ml-4 top-0 p-3 bg-[#1e1e1e] rounded-xl border border-gray-700 shadow-xl grid grid-cols-3 gap-2 w-48">
-                            {['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#ffffff', '#000000', '#9ca3af'].map((c) => (
-                                <button
-                                    key={c}
-                                    onClick={() => {
-                                        handleSetColor(c);
-                                        setShowColorPicker(false);
-                                    }}
-                                    className="w-8 h-8 rounded-lg border border-gray-600 hover:scale-110 transition-transform"
-                                    style={{ backgroundColor: c }}
-                                />
-                            ))}
-                        </div>
-                    )}
+                    {/* Color Picker Trigger */}
+                    <div className="relative">
+                        <button
+                            onClick={() => setShowColorPicker(!showColorPicker)}
+                            className="w-10 h-10 rounded-xl border-2 border-gray-600 flex items-center justify-center transition-transform hover:scale-105"
+                            style={{ backgroundColor: color }}
+                        >
+                            <div className="w-full h-full rounded-lg ring-1 ring-inset ring-black/20" />
+                        </button>
+
+                        {/* Popover Color Picker */}
+                        {showColorPicker && (
+                            <div className="absolute left-full ml-4 top-auto bottom-0 md:top-0 md:bottom-auto p-3 bg-[#1e1e1e] rounded-xl border border-gray-700 shadow-xl grid grid-cols-3 gap-2 w-48 z-50">
+                                {['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#ffffff', '#000000', '#9ca3af'].map((c) => (
+                                    <button
+                                        key={c}
+                                        onClick={() => {
+                                            handleSetColor(c);
+                                            setShowColorPicker(false);
+                                            setIsMobileMenuOpen(false);
+                                        }}
+                                        className="w-8 h-8 rounded-lg border border-gray-600 hover:scale-110 transition-transform"
+                                        style={{ backgroundColor: c }}
+                                    />
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Background Controls */}
+                <div className="bg-[#1e1e1e]/90 backdrop-blur-md p-2 rounded-2xl border border-gray-700 shadow-xl flex flex-col gap-2">
+                    {backgrounds.map((bg) => (
+                        <button
+                            key={bg.id}
+                            onClick={() => {
+                                handleSetBackgroundColor(bg.id);
+                                setIsMobileMenuOpen(false);
+                            }}
+                            className={`p-2 rounded-lg transition-colors ${backgroundColor === bg.id ? 'bg-gray-700 text-white' : 'text-gray-500 hover:text-gray-300'
+                                }`}
+                            title={bg.label}
+                        >
+                            <bg.icon size={18} />
+                        </button>
+                    ))}
                 </div>
             </div>
-
-            {/* Background Controls */}
-            <div className="bg-[#1e1e1e]/90 backdrop-blur-md p-2 rounded-2xl border border-gray-700 shadow-xl flex flex-col gap-2">
-                {backgrounds.map((bg) => (
-                    <button
-                        key={bg.id}
-                        onClick={() => handleSetBackgroundColor(bg.id)}
-                        className={`p-2 rounded-lg transition-colors ${backgroundColor === bg.id ? 'bg-gray-700 text-white' : 'text-gray-500 hover:text-gray-300'
-                            }`}
-                        title={bg.label}
-                    >
-                        <bg.icon size={18} />
-                    </button>
-                ))}
-            </div>
-        </div>
+        </>
     );
 }
