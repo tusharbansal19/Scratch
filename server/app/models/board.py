@@ -3,9 +3,9 @@ from typing import List, Dict, Any
 from datetime import datetime
 
 class DrawingEvent(BaseModel):
-    type: str # draw, clear, undo
-    tool: str # rect, circle, path, etc
-    data: Dict[str, Any] # coordinates, etc
+    type: str 
+    tool: str 
+    data: Dict[str, Any]
     color: str
     stroke: int
     userId: str
