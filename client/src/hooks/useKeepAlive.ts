@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
+import { API_BASE_URL } from '../lib/api';
 
-const KEEP_ALIVE_URL = 'https://scratch-161f.onrender.com';
+const KEEP_ALIVE_URL = API_BASE_URL;
 const PING_INTERVAL = 4 * 60 * 1000; // 4 minutes (Render sleeps after 15)
 
 export function useKeepAlive() {

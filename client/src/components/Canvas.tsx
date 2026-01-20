@@ -7,6 +7,7 @@ import { updateCursors } from '../store/boardSlice';
 import { v4 as uuidv4 } from 'uuid';
 import { throttle } from 'lodash';
 import { useAuthStore } from '../store/authStore';
+import { API_BASE_URL } from '../lib/api';
 
 // Extend fabric object to include ID
 // @ts-ignore
@@ -259,7 +260,9 @@ export default function Canvas({ boardId }: CanvasProps) {
     useEffect(() => {
         if (!fabricCanvas) return;
 
-        const ws = new WebSocket(`wss://scratch-161f.onrender.com/api/ws/${boardId}`);
+        // Convert HTTP URL to WebSocket URL
+        const wsUrl = API_BASE_URL.replace('https://', 'wss://').replace('http://', 'ws://');
+        const ws = new WebSocket(`${wsUrl}/api/ws/${boardId}`);
         socketRef.current = ws;
 
         const sendCursorMove = throttle((data: any) => {

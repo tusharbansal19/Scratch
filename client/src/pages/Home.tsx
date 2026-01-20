@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { Loader2, PenTool, Share2, Users, Zap, Layout, ArrowRight } from 'lucide-react';
+import api from '../lib/api';
 
 export default function Home() {
     const [loading, setLoading] = useState(false);
@@ -12,12 +13,8 @@ export default function Home() {
         setLoading(true);
         try {
             // In a real app we'd call the API, but for demo speed we can just generate a UUID locally or use the API
-            const res = await fetch('https://scratch-161f.onrender.com/api/boards', {
-                method: 'POST',
-            });
-            if (!res.ok) throw new Error("Failed to create");
-            const data = await res.json();
-            navigate(`/board/${data.board_id}`);
+            const res = await api.post('/api/boards');
+            navigate(`/board/${res.data.board_id}`);
         } catch (e) {
             console.error(e);
             // Fallback if API is offline for purely UI demo

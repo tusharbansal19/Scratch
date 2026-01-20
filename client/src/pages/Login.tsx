@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { Lock, Mail, ArrowRight } from 'lucide-react';
+import api from '../lib/api';
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -22,29 +23,23 @@ export default function Login() {
             formData.append('username', email); // OAuth2 expects 'username'
             formData.append('password', password);
 
-            const res = await fetch('https://scratch-161f.onrender.com/api/auth/token', {
-                method: 'POST',
+            const tokenRes = await api.post('/api/auth/token', formData, {
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: formData,
             });
 
-            if (!res.ok) throw new Error('Invalid credentials');
-
-            const data = await res.json();
-            const token = data.access_token;
+            const token = tokenRes.data.access_token;
 
             // 2. Get User Details
-            const userRes = await fetch('https://scratch-161f.onrender.com/api/auth/me', {
+            const userRes = await api.get('/api/auth/me', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
-            if (!userRes.ok) throw new Error('Failed to fetch user');
-            const userData = await userRes.json();
+            const userData = userRes.data;
 
             setAuth(token, userData);
             navigate('/');
         } catch (err: any) {
-            setError(err.message);
+            setError(err.response?.data?.detail || err.message || 'Invalid credentials');
         } finally {
             setLoading(false);
         }

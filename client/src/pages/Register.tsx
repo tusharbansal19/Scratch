@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { Lock, Mail, User, ArrowRight } from 'lucide-react';
+import api from '../lib/api';
 
 export default function Register() {
     const [email, setEmail] = useState('');
@@ -19,47 +20,36 @@ export default function Register() {
 
         try {
             // 1. Register User
-            const res = await fetch('https://scratch-161f.onrender.com/api/auth/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password, full_name: fullName }),
+            await api.post('/api/auth/register', {
+                email,
+                password,
+                full_name: fullName
             });
-
-            if (!res.ok) {
-                const data = await res.json();
-                throw new Error(data.detail || 'Registration failed');
-            }
 
             // 2. Auto-Login: Get Token
             const formData = new URLSearchParams();
             formData.append('username', email);
             formData.append('password', password);
 
-            const tokenRes = await fetch('https://scratch-161f.onrender.com/api/auth/token', {
-                method: 'POST',
+            const tokenRes = await api.post('/api/auth/token', formData, {
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: formData,
             });
 
-            if (!tokenRes.ok) throw new Error('Auto-login failed. Please sign in manually.');
-
-            const tokenData = await tokenRes.json();
-            const token = tokenData.access_token;
+            const token = tokenRes.data.access_token;
 
             // 3. Get User Details
-            const userRes = await fetch('https://scratch-161f.onrender.com/api/auth/me', {
+            const userRes = await api.get('/api/auth/me', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
-            if (!userRes.ok) throw new Error('Failed to fetch user details');
-            const userData = await userRes.json();
+            const userData = userRes.data;
 
             // 4. Authenticate & Redirect
             setAuth(token, userData);
             navigate('/');
 
         } catch (err: any) {
-            setError(err.message);
+            setError(err.response?.data?.detail || err.message || 'Registration failed');
         } finally {
             setLoading(false);
         }
