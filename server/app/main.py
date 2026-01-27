@@ -1,5 +1,4 @@
-from fastapi import FastAPI, Depends
-from pydantic import BaseModel
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import asyncio
@@ -56,31 +55,3 @@ app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
 @app.get("/")
 def read_root():
     return {"status": "ok", "service": "collaborative-drawing-board"}
-class Me(BaseModel):
-    name: str
-    wife: str    
-class meResponse(BaseModel):
-    message: str
-    real : bool
-
-async def verifyMe():
-    return {'Tushar':{ "wife":"Anushka"}}
-
-
-@app.post("/mywife", response_model=meResponse)
-async def mywife(me:Me,someResponse = Depends(verifyMe)):
-    message = ""
-    real:bool = False
-    if someResponse[me.name]['wife'] == me.wife:
-        message = "You have Anushka as your wife"
-        real = True
-    else:
-        message = "You are a liar"
-        real = False
-
-    
-    return meResponse(message=message, real=real)
-
-
-
-# Force reload for email-validator installation

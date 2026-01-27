@@ -11,12 +11,16 @@ import Loader from './components/Loader';
 import { useKeepAlive } from './hooks/useKeepAlive';
 import CanvaPractise from './components/CanvaPractise';
 
+import { useLocation } from 'react-router-dom';
+
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isLoading } = useAuthStore();
+  const location = useLocation();
+
 
   if (isLoading) return <Loader />;
 
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
+  return isAuthenticated ? <>{children}</> : <Navigate to="/login" state={{ from: location.pathname + location.search }} replace />;
 };
 
 function App() {
@@ -37,7 +41,7 @@ function App() {
     <Provider store={store}>
       <BrowserRouter>
         <Routes>
-          
+
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 

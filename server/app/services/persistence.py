@@ -3,6 +3,7 @@ import json
 from collections import defaultdict
 from app.realtime.pipelines import persist_queue
 from app.db.mongodb import mongodb
+from pymongo import UpdateOne
 
 # Tunable parameters
 BATCH_SIZE = 50          # max events per batch
@@ -13,7 +14,7 @@ async def apply_events_to_board(board_id: str, events: list):
     Apply a batch of events to one board snapshot in MongoDB.
     """
 
-    mongo_events_to_push = []
+    bulk_ops = []
 
     for msg in events:
         t = msg["type"]
@@ -21,40 +22,50 @@ async def apply_events_to_board(board_id: str, events: list):
 
         # Add new object
         if t == "object:added":
-            mongo_events_to_push.append(data)
+            bulk_ops.append(UpdateOne(
+                {"board_id": board_id},
+                {"$push": {"snapshot": data}}
+            ))
 
-        # Modify object (remove old, add new)
+        # Modify object (remove old, add new approach for Upsert behavior)
+        # Using $pull then $push in bulk is guaranteed order.
         elif t == "object:modified":
             obj_id = data.get("id")
             if obj_id:
-                await mongodb.db.boards.update_one(
+                bulk_ops.append(UpdateOne(
                     {"board_id": board_id},
                     {"$pull": {"snapshot": {"id": obj_id}}}
-                )
-                mongo_events_to_push.append(data)
+                ))
+                bulk_ops.append(UpdateOne(
+                    {"board_id": board_id},
+                    {"$push": {"snapshot": data}}
+                ))
 
         # Remove object
         elif t == "object:removed":
             obj_id = data.get("id")
             if obj_id:
-                await mongodb.db.boards.update_one(
+                bulk_ops.append(UpdateOne(
                     {"board_id": board_id},
                     {"$pull": {"snapshot": {"id": obj_id}}}
-                )
+                ))
 
         # Clear board
         elif t == "board:clear":
-            await mongodb.db.boards.update_one(
+            bulk_ops.append(UpdateOne(
                 {"board_id": board_id},
                 {"$set": {"snapshot": []}}
-            )
+            ))
 
-    # Final batch push (one write for many objects)
-    if mongo_events_to_push:
-        await mongodb.db.boards.update_one(
-            {"board_id": board_id},
-            {"$push": {"snapshot": {"$each": mongo_events_to_push}}}
-        )
+    # Execute bulk write
+    if bulk_ops:
+        try:
+            await mongodb.db.boards.bulk_write(bulk_ops, ordered=True)
+        except Exception as e:
+             # If bulk write fails, we should log it. 
+             # In a real app, strict error handling might be needed, 
+             # but keeping the worker alive is priority.
+             print(f"Bulk write failed for board {board_id}: {e}")
 
 async def flush_buffer(buffer):
     if not buffer:

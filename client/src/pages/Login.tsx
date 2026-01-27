@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { Lock, Mail, ArrowRight } from 'lucide-react';
 import api from '../lib/api';
@@ -9,7 +9,11 @@ export default function Login() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+
     const navigate = useNavigate();
+    const location = useLocation();
+    const from = location.state?.from || "/";
+    console.log("hello ", from);
     const setAuth = useAuthStore((state) => state.setAuth);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -37,7 +41,7 @@ export default function Login() {
             const userData = userRes.data;
 
             setAuth(token, userData);
-            navigate('/');
+            navigate(from, { replace: true });
         } catch (err: any) {
             setError(err.response?.data?.detail || err.message || 'Invalid credentials');
         } finally {
@@ -104,7 +108,7 @@ export default function Login() {
 
                     <p className="mt-6 text-center text-sm text-gray-400">
                         Don't have an account?{' '}
-                        <Link to="/register" className="text-indigo-400 hover:text-indigo-300 font-medium">
+                        <Link to="/register" state={location.state} className="text-indigo-400 hover:text-indigo-300 font-medium">
                             Create Account
                         </Link>
                     </p>

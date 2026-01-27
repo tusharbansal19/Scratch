@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { Lock, Mail, User, ArrowRight } from 'lucide-react';
 import api from '../lib/api';
@@ -12,6 +12,9 @@ export default function Register() {
     const [loading, setLoading] = useState(false);
     const { setAuth } = useAuthStore();
     const navigate = useNavigate();
+    const location = useLocation();
+    const from = location.state?.from || "/";
+ 
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -46,7 +49,7 @@ export default function Register() {
 
             // 4. Authenticate & Redirect
             setAuth(token, userData);
-            navigate('/');
+            navigate(from, { replace: true });
 
         } catch (err: any) {
             setError(err.response?.data?.detail || err.message || 'Registration failed');
@@ -129,7 +132,7 @@ export default function Register() {
 
                     <p className="mt-6 text-center text-sm text-gray-400">
                         Already have an account?{' '}
-                        <Link to="/login" className="text-indigo-400 hover:text-indigo-300 font-medium">
+                        <Link to="/login" state={location.state} className="text-indigo-400 hover:text-indigo-300 font-medium">
                             Sign In
                         </Link>
                     </p>
