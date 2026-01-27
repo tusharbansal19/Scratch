@@ -12,6 +12,7 @@ import { API_BASE_URL } from '../lib/api';
 // Extend fabric object to include ID
 // @ts-ignore
 fabric.Object.prototype.toObject = (function (toObject) {
+
     return function (this: any) {
         return fabric.util.object.extend(toObject.call(this), { id: this.id });
     };
@@ -123,7 +124,7 @@ export default function Canvas({ boardId }: CanvasProps) {
     }, [backgroundColor, fabricCanvas]);
 
     // Enhanced Tool Configuration
-    useEffect(() => {
+    useEffect(() => { 
         if (!fabricCanvas) return;
 
         const bgColor = backgroundColor || '#1e1e1e';
@@ -405,7 +406,7 @@ export default function Canvas({ boardId }: CanvasProps) {
         };
 
         const handleObjectModified = (e: any) => {
-            if (isRemoteUpdate.current) return;
+            if (isRemoteUpdate.current) return;                                   
             sendEvent('object:modified', e.target.toObject());
         };
 

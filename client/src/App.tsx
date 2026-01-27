@@ -9,6 +9,7 @@ import Register from './pages/Register';
 import { useAuthStore } from './store/authStore';
 import Loader from './components/Loader';
 import { useKeepAlive } from './hooks/useKeepAlive';
+import CanvaPractise from './components/CanvaPractise';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isLoading } = useAuthStore();
@@ -36,12 +37,17 @@ function App() {
     <Provider store={store}>
       <BrowserRouter>
         <Routes>
+          
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
           <Route
             path="/"
             element={<Home />}
+          />
+          <Route
+            path="/practise"
+            element={<CanvaPractise />}
           />
           <Route
             path="/board/:boardId"

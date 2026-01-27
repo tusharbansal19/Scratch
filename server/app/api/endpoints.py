@@ -3,6 +3,7 @@ from app.services.socket_manager import manager
 from app.db.redis import redis_client
 from app.db.mongodb import mongodb
 from app.models.board import Board
+from app.realtime.pipelines import persist_queue
 import uuid
 import json
 
@@ -66,63 +67,15 @@ async def websocket_endpoint(websocket: WebSocket, board_id: str):
 
             # Async persistence (Fire and forget style for performance, or simple await)
             # In a real heavy app, this would go to a background worker queue (Celery/IQ)
+            # Async persistence (Fire and forget style for performance, or simple await)
+            # In a real heavy app, this would go to a background worker queue (Celery/IQ)
             try:
-                msg = json.loads(data_str)
-                msg_type = msg.get("type")
-                
-                # Handle single event
-                if msg_type == "object:added":
-                     await mongodb.db.boards.update_one(
-                        {"board_id": board_id},
-                        {"$push": {"snapshot": msg["data"]}}
-                    )
-
-                elif msg_type == "object:modified":
-                     # Replace logic: pull previous version, push new version
-                     obj_id = msg.get("data", {}).get("id")
-                     if obj_id:
-                        await mongodb.db.boards.update_one(
-                            {"board_id": board_id},
-                            {"$pull": {"snapshot": {"id": obj_id}}}
-                        )
-                        await mongodb.db.boards.update_one(
-                            {"board_id": board_id},
-                            {"$push": {"snapshot": msg["data"]}}
-                        )
-
-                elif msg_type == "object:removed":
-                     obj_id = msg.get("data", {}).get("id")
-                     if obj_id:
-                        await mongodb.db.boards.update_one(
-                            {"board_id": board_id},
-                            {"$pull": {"snapshot": {"id": obj_id}}}
-                        )
-                
-                elif msg_type == "board:clear":
-                    await mongodb.db.boards.update_one(
-                        {"board_id": board_id},
-                        {"$set": {"snapshot": []}}
-                    )
-                
-                # Handle batch events (if we implement batching on frontend)
-                elif msg_type == "batch":
-                    events = msg.get("data", [])
-                    # Filter only persistent-worthy events
-                    saveable_events = [e for e in events if e.get("type") in ["object:added", "object:modified"]]
-                     # We need to extract the 'data' payload from each event wrapper if the batch structure is wrapper objects
-                     # Assuming batch is list of {type:..., data:...}
-                    
-                    # Correction: Mongo $push with $each for batch
-                    mongo_events = [e["data"] for e in events if e.get("type") in ["object:added", "object:modified"]]
-                    
-                    if mongo_events:
-                        await mongodb.db.boards.update_one(
-                            {"board_id": board_id},
-                            {"$push": {"snapshot": {"$each": mongo_events}}}
-                        )
-
+                await persist_queue.put({
+                    "board_id": board_id,
+                    "data": data_str
+                })
             except Exception as e:
-                print(f"Error saving persistence: {e}")
+                print(f"Error queueing persistence events: {e}")
             
     except WebSocketDisconnect:
         manager.disconnect(websocket, board_id)

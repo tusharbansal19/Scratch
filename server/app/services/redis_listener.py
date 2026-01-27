@@ -4,9 +4,7 @@ from app.db.redis import redis_client
 from app.services.socket_manager import manager
 
 async def listen_to_redis():
-    """
-    Subscribes to all board channels and broadcasts messages to local connections.
-    """
+   
     if not redis_client.redis:
         logging.warning("Redis client not initialized, skipping listener")
         return
