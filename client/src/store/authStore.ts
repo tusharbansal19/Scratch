@@ -22,10 +22,10 @@ export const useAuthStore = create<AuthState>((set) => ({
     isAuthenticated: false,
     isLoading: true,
 
-    setAuth: (token, user) => {
+    setAuth: async (token, user) => {
         Cookies.set('auth_token', token, { expires: 7 }); // 7 days
         localStorage.setItem('auth_user', JSON.stringify(user));
-        set({ token, user, isAuthenticated: true });
+        await set({ token, user, isAuthenticated: true });
     },
 
     logout: () => {

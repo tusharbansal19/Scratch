@@ -37,15 +37,15 @@ export default function CanvaPractise() {
         }
 
 
-        canvas.on("path:created", (e) => {
-  const currentTool = toolRef.current;
+        canvas.on("path:created", (e: any) => {
+            const currentTool = toolRef.current;
 
-  if (currentTool === "erase") {
-    // 🔴 CRITICAL: remove the eraser path object
-    canvas.remove(e.path);
-    canvas.requestRenderAll();
-  }
-});
+            if (currentTool === "erase") {
+                // 🔴 CRITICAL: remove the eraser path object
+                canvas.remove(e.path);
+                canvas.requestRenderAll();
+            }
+        });
 
 
         // Event listener for new paths
@@ -74,52 +74,52 @@ export default function CanvaPractise() {
 
     useEffect(() => {
         const canvas = fabricRef.current;
-if (!canvas) return;
+        if (!canvas) return;
 
-// Reset everything
-canvas.isDrawingMode = false;
-canvas.selection = false;
-canvas.defaultCursor = "default";
+        // Reset everything
+        canvas.isDrawingMode = false;
+        canvas.selection = false;
+        canvas.defaultCursor = "default";
 
-// VERY IMPORTANT: reset composite mode
-canvas.contextTop.globalCompositeOperation = "source-over";
+        // VERY IMPORTANT: reset composite mode
+        (canvas as any).contextTop.globalCompositeOperation = "source-over";
 
-canvas.forEachObject(obj => {
-  obj.selectable = false;
-  obj.evented = false;
-});
+        canvas.forEachObject(obj => {
+            obj.selectable = false;
+            obj.evented = false;
+        });
 
-// ---------- SELECT ----------
-if (tool === "select") {
-  canvas.selection = true;
-  canvas.forEachObject(obj => {
-    obj.selectable = true;
-    obj.evented = true;
-  });
-  return;
-}
+        // ---------- SELECT ----------
+        if (tool === "select") {
+            canvas.selection = true;
+            canvas.forEachObject(obj => {
+                obj.selectable = true;
+                obj.evented = true;
+            });
+            return;
+        }
 
-// ---------- DRAW or ERASE ----------
-canvas.isDrawingMode = true;
+        // ---------- DRAW or ERASE ----------
+        canvas.isDrawingMode = true;
 
-const brush = new fabric.PencilBrush(canvas);
+        const brush = new fabric.PencilBrush(canvas);
 
-if (tool === "draw") {
-  brush.color = "white";
-  brush.width = 4;
-  brush.globalCompositeOperation = "source-over"; // normal draw
-}
+        if (tool === "draw") {
+            brush.color = "white";
+            brush.width = 4;
+            (brush as any).globalCompositeOperation = "source-over"; // normal draw
+        }
 
-if (tool === "erase") {
-  brush.color = "rgba(0,0,0,1)"; // color doesn't matter
-  brush.width = 30;
+        if (tool === "erase") {
+            brush.color = "rgba(0,0,0,1)"; // color doesn't matter
+            brush.width = 30;
 
-  // 🔴 THIS is the REAL ERASER
-  brush.globalCompositeOperation = "destination-out";
-}
+            // 🔴 THIS is the REAL ERASER
+            (brush as any).globalCompositeOperation = "destination-out";
+        }
 
-canvas.freeDrawingBrush = brush;
-canvas.defaultCursor = "crosshair";
+        canvas.freeDrawingBrush = brush;
+        canvas.defaultCursor = "crosshair";
 
     }, [tool]);
 
@@ -140,8 +140,8 @@ canvas.defaultCursor = "crosshair";
                 <button
                     onClick={() => setTool("draw")}
                     className={`px-6 py-2 rounded font-medium transition-all duration-200 ${tool === "draw"
-                            ? "bg-blue-600 text-white scale-105 shadow-blue-900/50 shadow-md"
-                            : "bg-transparent text-slate-400 hover:text-white hover:bg-slate-800"
+                        ? "bg-blue-600 text-white scale-105 shadow-blue-900/50 shadow-md"
+                        : "bg-transparent text-slate-400 hover:text-white hover:bg-slate-800"
                         }`}
                 >
                     Draw
@@ -149,8 +149,8 @@ canvas.defaultCursor = "crosshair";
                 <button
                     onClick={() => setTool("erase")}
                     className={`px-6 py-2 rounded font-medium transition-all duration-200 ${tool === "erase"
-                            ? "bg-blue-600 text-white scale-105 shadow-blue-900/50 shadow-md"
-                            : "bg-transparent text-slate-400 hover:text-white hover:bg-slate-800"
+                        ? "bg-blue-600 text-white scale-105 shadow-blue-900/50 shadow-md"
+                        : "bg-transparent text-slate-400 hover:text-white hover:bg-slate-800"
                         }`}
                 >
                     Erase
@@ -158,8 +158,8 @@ canvas.defaultCursor = "crosshair";
                 <button
                     onClick={() => setTool("select")}
                     className={`px-6 py-2 rounded font-medium transition-all duration-200 ${tool === "select"
-                            ? "bg-blue-600 text-white scale-105 shadow-blue-900/50 shadow-md"
-                            : "bg-transparent text-slate-400 hover:text-white hover:bg-slate-800"
+                        ? "bg-blue-600 text-white scale-105 shadow-blue-900/50 shadow-md"
+                        : "bg-transparent text-slate-400 hover:text-white hover:bg-slate-800"
                         }`}
                 >
                     Select

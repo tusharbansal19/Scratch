@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { Lock, Mail, ArrowRight } from 'lucide-react';
@@ -12,8 +12,9 @@ export default function Login() {
 
     const navigate = useNavigate();
     const location = useLocation();
-    const from = location.state?.from || "/";
-    console.log("hello ", from);
+    // const from = ;
+    const navigationRef = useRef(location.state?.from || "/");
+    console.log("hello ", navigationRef.current);
     const setAuth = useAuthStore((state) => state.setAuth);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -40,8 +41,9 @@ export default function Login() {
 
             const userData = userRes.data;
 
-            setAuth(token, userData);
-            navigate(from, { replace: true });
+            await setAuth(token, userData);
+
+            navigate(navigationRef.current, { replace: true });
         } catch (err: any) {
             setError(err.response?.data?.detail || err.message || 'Invalid credentials');
         } finally {
